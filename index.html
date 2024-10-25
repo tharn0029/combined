@@ -12,15 +12,16 @@
             padding: 20px;
             background-color: #f9f9f9;
         }
-        .container {
+        .section-container {
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        textarea, input {
+        .simple-input {
             width: 100%;
+            height: 40px;
             margin: 10px 0;
             padding: 12px;
             border: 2px solid #ddd;
@@ -29,65 +30,146 @@
             font-size: 14px;
             box-sizing: border-box;
         }
-        textarea {
+        .message-textarea {
+            width: 100%;
             height: 100px;
+            margin: 10px 0;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
         }
-        .button-group {
+        .array-textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .button-row {
             display: flex;
             gap: 10px;
             margin: 10px 0;
         }
-        button {
+        /* Simple Input Section Buttons */
+        .simple-submit-btn {
+            background-color: #4CAF50;
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
-            cursor: pointer;
             color: white;
-            transition: background-color 0.3s;
+            cursor: pointer;
         }
-        .submit-btn {
-            background-color: #4CAF50;
-        }
-        .submit-btn:hover {
-            background-color: #45a049;
-        }
-        .delete-btn {
+        .simple-delete-btn {
             background-color: #f44336;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
         }
-        .delete-btn:hover {
-            background-color: #da190b;
-        }
-        .add-no-btn {
+        /* Message Section Buttons */
+        .message-extract-btn {
             background-color: #2196F3;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
         }
-        .add-no-btn:hover {
-            background-color: #1976D2;
+        .message-delete-btn {
+            background-color: #ff5722;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
         }
-        #result, #storedItems {
+        /* Array Section Buttons */
+        .array-submit-btn {
+            background-color: #009688;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        .array-clear-btn {
+            background-color: #ff9800;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        .array-delete-btn {
+            background-color: #e91e63;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        .array-no-btn {
+            background-color: #673ab7;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        /* Hover states */
+        .simple-submit-btn:hover { background-color: #45a049; }
+        .simple-delete-btn:hover { background-color: #da190b; }
+        .message-extract-btn:hover { background-color: #1976D2; }
+        .message-delete-btn:hover { background-color: #d84315; }
+        .array-submit-btn:hover { background-color: #00796b; }
+        .array-clear-btn:hover { background-color: #f57c00; }
+        .array-delete-btn:hover { background-color: #c2185b; }
+        .array-no-btn:hover { background-color: #5e35b1; }
+
+        .simple-result {
             margin-top: 20px;
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
             background-color: #f9f9f9;
         }
-        .status {
+        .message-result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .array-result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .status-message {
             margin-top: 10px;
             padding: 12px;
             border-radius: 4px;
             display: none;
         }
-        .success {
+        .status-success {
             background-color: #d4edda;
             color: #155724;
         }
-        .error {
+        .status-error {
             background-color: #f8d7da;
             color: #721c24;
         }
-        #simpleInput {
-            height: 40px;
-        }
-        li {
+        .array-list-item {
             margin-bottom: 10px;
             padding: 12px;
             background: white;
@@ -97,42 +179,43 @@
             word-break: break-all;
             cursor: pointer;
         }
-        li:hover {
+        .array-list-item:hover {
             background-color: #f8f8f8;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="section-container">
         <h2>Simple Text Input</h2>
-        <input type="text" id="simpleInput" placeholder="Enter text here...">
-        <div class="button-group">
-            <button class="submit-btn" onclick="submitSimpleText()">Submit</button>
-            <button class="delete-btn" onclick="deleteSimpleText()">Delete</button>
+        <input type="text" class="simple-input" id="simpleInput" placeholder="Enter text here...">
+        <div class="button-row">
+            <button class="simple-submit-btn" onclick="submitSimpleText()">Submit</button>
+            <button class="simple-delete-btn" onclick="deleteSimpleText()">Delete</button>
         </div>
-        <div id="simpleResult"></div>
+        <div class="simple-result" id="simpleResult"></div>
     </div>
 
-    <div class="container">
+    <div class="section-container">
         <h2>Message Extractor</h2>
-        <textarea id="messageInput" placeholder='Enter text in format: ["<Ostart>Message<Oend>"] or "<Ostart>Message<Oend>"'></textarea>
-        <div class="button-group">
-            <button class="submit-btn" onclick="extractLastMessage()">Extract Message</button>
-            <button class="delete-btn" onclick="deleteMessageContent()">Delete</button>
+        <textarea class="message-textarea" id="messageInput" placeholder='Enter text in format: ["<Ostart>Message<Oend>"] or "<Ostart>Message<Oend>"'></textarea>
+        <div class="button-row">
+            <button class="message-extract-btn" onclick="extractLastMessage()">Extract Message</button>
+            <button class="message-delete-btn" onclick="deleteMessageContent()">Delete</button>
         </div>
-        <div id="messageResult"></div>
+        <div class="message-result" id="messageResult"></div>
     </div>
 
-    <div class="container">
+    <div class="section-container">
         <h2>Shared Array List</h2>
-        <textarea id="arrayInput" placeholder='Enter array like ["https://example.com/article1"] or ["https://example.com/article1", "https://example.com/article2"]'></textarea>
-        <div class="button-group">
-            <button class="submit-btn" onclick="submitArray()">Submit Array</button>
-            <button class="delete-btn" onclick="deleteArray()">Delete All</button>
-            <button class="add-no-btn" onclick="addNO()">Add NO</button>
+        <textarea class="array-textarea" id="arrayInput" placeholder='Enter array like ["https://example.com/article1"] or ["https://example.com/article1", "https://example.com/article2"]'></textarea>
+        <div class="button-row">
+            <button class="array-submit-btn" onclick="submitArray()">Submit Array</button>
+            <button class="array-clear-btn" onclick="clearArrayInput()">Clear Input</button>
+            <button class="array-delete-btn" onclick="deleteArray()">Delete All</button>
+            <button class="array-no-btn" onclick="addNO()">Add NO</button>
         </div>
-        <div id="status" class="status"></div>
-        <div id="storedItems">
+        <div class="status-message" id="status"></div>
+        <div class="array-result" id="storedItems">
             <h3>Stored Items:</h3>
             <ul id="listContainer"></ul>
         </div>
@@ -160,7 +243,12 @@
         const currentSessionId = "uxyzerzuvxe";
         let currentArray = [];
 
-        // Make functions globally available
+        // New clear input function for array section
+        window.clearArrayInput = function() {
+            document.getElementById('arrayInput').value = '';
+            showStatus('Input cleared');
+        };
+
         window.submitArray = async function() {
             const input = document.getElementById('arrayInput').value.trim();
             try {
@@ -195,7 +283,6 @@
             }
         };
 
-        // Simple text input functions
         window.submitSimpleText = function() {
             const input = document.getElementById('simpleInput').value.trim();
             if (input) {
@@ -208,7 +295,6 @@
             document.getElementById('simpleResult').textContent = '';
         };
 
-        // Message extractor functions
         window.extractLastMessage = function() {
             try {
                 let input = document.getElementById('messageInput').value.trim();
@@ -243,7 +329,6 @@
             document.getElementById('messageResult').innerHTML = '';
         };
 
-        // Firebase helper functions
         async function saveData(array) {
             try {
                 await set(ref(database, 'sessions/' + currentSessionId), {
@@ -260,7 +345,7 @@
         function showStatus(message, isError = false) {
             const status = document.getElementById('status');
             status.textContent = message;
-            status.className = 'status ' + (isError ? 'error' : 'success');
+            status.className = 'status-message ' + (isError ? 'status-error' : 'status-success');
             status.style.display = 'block';
             setTimeout(() => {
                 status.style.display = 'none';
@@ -279,6 +364,7 @@
             }
             array.forEach((item) => {
                 const listItem = document.createElement('li');
+                listItem.className = 'array-list-item';
                 listItem.textContent = item;
                 listItem.addEventListener('click', () => {
                     if (item.startsWith('http')) {

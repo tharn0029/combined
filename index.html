@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        textarea, input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            background-color: #f44336;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+        .add-no-btn {
+            background-color: #2196F3;
+        }
+        .add-no-btn:hover {
+            background-color: #1976D2;
+        }
+        #result, #storedItems {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        #simpleInput {
+            height: 40px;
+        }
+        li {
+            margin-bottom: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            list-style: none;
+            word-break: break-all;
+            cursor: pointer;
+        }
+        li:hover {
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Simple Text Input</h2>
+        <input type="text" id="simpleInput" placeholder="Enter text here...">
+        <div class="button-group">
+            <button class="submit-btn" onclick="submitSimpleText()">Submit</button>
+            <button class="delete-btn" onclick="deleteSimpleText()">Delete</button>
+        </div>
+        <div id="simpleResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>Message Extractor</h2>
+        <textarea id="messageInput" placeholder='Enter text in format: ["<Ostart>Message<Oend>"] or "<Ostart>Message<Oend>"'></textarea>
+        <div class="button-group">
+            <button class="submit-btn" onclick="extractLastMessage()">Extract Message</button>
+            <button class="delete-btn" onclick="deleteMessageContent()">Delete</button>
+        </div>
+        <div id="messageResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>Shared Array List</h2>
+        <textarea id="arrayInput" placeholder='Enter array like ["https://example.com/article1"] or ["https://example.com/article1", "https://example.com/article2"]'></textarea>
+        <div class="button-group">
+            <button class="submit-btn" onclick="submitArray()">Submit Array</button>
+            <button class="delete-btn" onclick="deleteArray()">Delete All</button>
+            <button class="add-no-btn" onclick="addNO()">Add NO</button>
+        </div>
+        <div id="status" class="status"></div>
+        <div id="storedItems">
+            <h3>Stored Items:</h3>
+            <ul id="listContainer"></ul>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+        import { getDatabase, ref, set, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzoBSx_L0q49S3CBgTOQSsuHKJolzWEeY",
+            authDomain: "newspasting.firebaseapp.com",
+            databaseURL: "https://newspasting-default-rtdb.firebaseio.com",
+            projectId: "newspasting",
+            storageBucket: "newspasting.appspot.com",
+            messagingSenderId: "400698614921",
+            appId: "1:400698614921:web:19407b85ce7f78aaab1258"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const currentSessionId = "uxyzerzuvxe";
+        let currentArray = [];
+
+        // Make functions globally available
+        window.submitArray = async function() {
+            const input = document.getElementById('arrayInput').value.trim();
+            try {
+                let array = JSON.parse(input);
+                array = Array.isArray(array) ? array : [array];
+                await saveData(array);
+            } catch (e) {
+                showStatus('Invalid array format. Please use format: ["url1"] or ["url1", "url2"]', true);
+            }
+        };
+
+        window.deleteArray = async function() {
+            try {
+                await remove(ref(database, 'sessions/' + currentSessionId));
+                document.getElementById('arrayInput').value = '';
+                currentArray = [];
+                displayList([]);
+                showStatus('All data deleted successfully!');
+            } catch (error) {
+                showStatus('Error deleting data: ' + error.message, true);
+            }
+        };
+
+        window.addNO = async function() {
+            try {
+                const newArray = [...currentArray, "NO"];
+                await saveData(newArray);
+                displayList(newArray);
+                showStatus('"NO" added successfully!');
+            } catch (error) {
+                showStatus('Error adding NO: ' + error.message, true);
+            }
+        };
+
+        // Simple text input functions
+        window.submitSimpleText = function() {
+            const input = document.getElementById('simpleInput').value.trim();
+            if (input) {
+                document.getElementById('simpleResult').textContent = input;
+            }
+        };
+
+        window.deleteSimpleText = function() {
+            document.getElementById('simpleInput').value = '';
+            document.getElementById('simpleResult').textContent = '';
+        };
+
+        // Message extractor functions
+        window.extractLastMessage = function() {
+            try {
+                let input = document.getElementById('messageInput').value.trim();
+                let cleanMessage = '';
+
+                try {
+                    const parsedInput = JSON.parse(input);
+                    if (Array.isArray(parsedInput)) {
+                        cleanMessage = parsedInput[parsedInput.length - 1].replace(/<Ostart>|<Oend>/g, '');
+                    } else if (typeof parsedInput === 'string') {
+                        cleanMessage = parsedInput.replace(/<Ostart>|<Oend>/g, '');
+                    } else {
+                        throw new Error('Invalid format');
+                    }
+                } catch (jsonError) {
+                    if (input.includes('<Ostart>') && input.includes('<Oend>')) {
+                        cleanMessage = input.replace(/["']/g, '').replace(/<Ostart>|<Oend>/g, '');
+                    } else {
+                        throw new Error('Invalid format');
+                    }
+                }
+
+                document.getElementById('messageResult').innerHTML = cleanMessage;
+            } catch (error) {
+                document.getElementById('messageResult').innerHTML = 
+                    '<span style="color: red;">Error: Please check your input format.</span>';
+            }
+        };
+
+        window.deleteMessageContent = function() {
+            document.getElementById('messageInput').value = '';
+            document.getElementById('messageResult').innerHTML = '';
+        };
+
+        // Firebase helper functions
+        async function saveData(array) {
+            try {
+                await set(ref(database, 'sessions/' + currentSessionId), {
+                    array: array,
+                    timestamp: Date.now()
+                });
+                currentArray = array;
+                showStatus('Data saved successfully!');
+            } catch (error) {
+                showStatus('Error saving data: ' + error.message, true);
+            }
+        }
+
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + (isError ? 'error' : 'success');
+            status.style.display = 'block';
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        function displayList(array) {
+            const listContainer = document.getElementById('listContainer');
+            listContainer.innerHTML = '';
+            if (!array || array.length === 0) {
+                const emptyMessage = document.createElement('p');
+                emptyMessage.textContent = 'No items in the list';
+                emptyMessage.style.color = '#666';
+                listContainer.appendChild(emptyMessage);
+                return;
+            }
+            array.forEach((item) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = item;
+                listItem.addEventListener('click', () => {
+                    if (item.startsWith('http')) {
+                        window.open(item, '_blank');
+                    }
+                });
+                listContainer.appendChild(listItem);
+            });
+        }
+
+        // Add enter key listeners
+        document.getElementById('simpleInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitSimpleText();
+            }
+        });
+
+        // Load initial data
+        const sessionRef = ref(database, 'sessions/' + currentSessionId);
+        onValue(sessionRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.array) {
+                currentArray = data.array;
+                displayList(data.array);
+            } else {
+                currentArray = [];
+                displayList([]);
+            }
+        });
+    </script>
+</body>
+</html>
